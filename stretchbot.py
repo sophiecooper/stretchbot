@@ -41,8 +41,6 @@ slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
 
 
 def handle_command(command, channel, repeated_timer):
-
-    print(command)
     """
         Receives commands directed at the bot and determines if they
         are valid commands. If so, then acts on the commands. If not,
@@ -53,24 +51,15 @@ def handle_command(command, channel, repeated_timer):
                "* command to get stretches on an interval."
 
     if command.startswith(STRETCH_COMMAND):
-        print(command)
     	# stretch = STRETCHES[randint(0,len(STRETCHES)-1)]
         img_name, stretch = choice(list(STRETCHES.items()))
         img_attachment = [{"title": "Do this stretch!", 
                            "image_url": IMAGES[img_name]}]
         response = "Sure! Why don't you stretch " + stretch 
-
-
-    if command.startswith(TIMER_COMMAND):
-    	response = "This feature is coming soon. Stay tuned!"
-
         slack_client.api_call("chat.postMessage", channel=channel,
                                               text=response, 
                                               as_user=True, 
                                               attachments=img_attachment)
-
-        slack_client.api_call("chat.postMessage", channel=channel,
-                          text=response, as_user=True)
     if command.startswith(TIMER_COMMAND):
         delay = 5
         response = "Okay! I will send you a new stretch every " + str(delay) + " minutes. Type 'stop' to stop receiving stretches."
@@ -79,7 +68,6 @@ def handle_command(command, channel, repeated_timer):
         repeated_timer = RepeatedTimer(delay, send_stretch, channel)
         sleep(5)
     if command.startswith(STOP_COMMAND):
-        print("stopping")
         if repeated_timer is None:
             return
         else:
