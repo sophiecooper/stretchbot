@@ -23,8 +23,18 @@ STRETCHES = {"calf_stretch": "your calves by doing some toe raises.",
 	         "neck_stretch": "your neck by looking to the left and right, then do some gentle neck rolls.",
 	         "ob_stretch":   "your obliques by doing a side bend for 10 seconds on each side",
 	         "wrist_strech": "your wrists and shoulders by interlacing your fingers with straight arms in front of you",
-	         "back_stretch": "your back by doing a seated twist on each side"
+	         "back_stretch": "your back by doing a seated twist on each side", 
+             "quad_stretch": "your quads by doing a standing quad stretch."
              }
+IMAGES = {"calf_stretch": "https://goo.gl/Qk8beF",
+          "hip_stretch": "https://goo.gl/71mVav",
+          "ham_stretch": "https://goo.gl/rTIOJV",
+          "neck_stretch": "https://goo.gl/92dq5z",
+          "ob_stretch": "https://goo.gl/zMH6tt",
+          "wrist_stretch": "goo.gl/Qk8beF",
+          "back_stretch": "https://goo.gl/3lKlgl", 
+          "quad_stretch": "https://goo.gl/vpvUgg"
+          }
 
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
@@ -41,11 +51,24 @@ def handle_command(command, channel, repeated_timer):
     response = "I'm not sure what you mean. Use the *" + STRETCH_COMMAND + \
                "* command for a random stretch, or the *" + TIMER_COMMAND + \
                "* command to get stretches on an interval."
+
     if command.startswith(STRETCH_COMMAND):
         print(command)
     	# stretch = STRETCHES[randint(0,len(STRETCHES)-1)]
         img_name, stretch = choice(list(STRETCHES.items()))
+        img_attachment = [{"title": "Do this stretch!", 
+                           "image_url": IMAGES[img_name]}]
         response = "Sure! Why don't you stretch " + stretch 
+
+
+    if command.startswith(TIMER_COMMAND):
+    	response = "This feature is coming soon. Stay tuned!"
+
+        slack_client.api_call("chat.postMessage", channel=channel,
+                                              text=response, 
+                                              as_user=True, 
+                                              attachments=img_attachment)
+
         slack_client.api_call("chat.postMessage", channel=channel,
                           text=response, as_user=True)
     if command.startswith(TIMER_COMMAND):
@@ -61,7 +84,7 @@ def handle_command(command, channel, repeated_timer):
             return
         else:
             repeated_timer.stop()
-        return
+            return
 
 def send_stretch(channel):
     print("in sendstretch")
