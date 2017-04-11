@@ -47,18 +47,26 @@ def handle_command(command, channel):
     """
     response = "I'm not sure what you mean. Use the *" + STRETCH_COMMAND + \
                "* command for a random stretch, or the *" + TIMER_COMMAND + \
-               "* command to get stretches on an interval."
+               "{# of minutes between each stretch}* command to get stretches on an interval."
 
     if command.startswith(STRETCH_COMMAND):
     	# stretch = STRETCHES[randint(0,len(STRETCHES)-1)]
         send_stretch(channel)
     if command.startswith(TIMER_COMMAND):
-        delay = 5
+        delay = ""
+        for s in command.split():
+            if s.isdigit():
+                delay = delay + s
+        try:
+            delay = int(delay)
+        except:
+            response = "Please use the *timer {# of minutes}* command to receive stretches on an interval"  
+            slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
+            return
         response = "Okay! I will send you a new stretch every " + str(delay) + " minutes. Type 'stop' to stop receiving stretches."
-        slack_client.api_call("chat.postMessage", channel=channel,
-                          text=response, as_user=True)
+        slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
         global repeated_timer
-        repeated_timer = RepeatedTimer(delay, send_stretch, channel)
+        repeated_timer = RepeatedTimer((delay*60), send_stretch, channel)
     if command.startswith(STOP_COMMAND):
         global repeated_timer
         if repeated_timer is None:
@@ -97,7 +105,7 @@ if __name__ == "__main__":
     READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
     global repeated_timer
     if slack_client.rtm_connect():
-        print("StarterBot connected and running!")
+        print("Stretchbot connected and running!")
         while True:
             command, channel = parse_slack_output(slack_client.rtm_read())
             if command and channel:
