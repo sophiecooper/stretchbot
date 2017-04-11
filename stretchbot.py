@@ -69,10 +69,10 @@ def handle_command(command, channel):
 
 def send_stretch(channel):
     img_name, stretch = choice(list(STRETCHES.items()))
-        img_attachment = [{"title": "Do this stretch!", 
-                           "image_url": IMAGES[img_name]}]
-        response = "Sure! Why don't you stretch " + stretch 
-        slack_client.api_call("chat.postMessage", channel=channel,
+    img_attachment = [{"title": "Do this stretch!", 
+                       "image_url": IMAGES[img_name]}]
+    response = "Sure! Why don't you stretch " + stretch 
+    slack_client.api_call("chat.postMessage", channel=channel,
                                               text=response, 
                                               as_user=True, 
                                               attachments=img_attachment)
