@@ -1,16 +1,22 @@
 import os
 import time
+from repeated_timer import RepeatedTimer
 from random import randint, choice 
+from time import sleep
 from slackclient import SlackClient
 
 
 # strechbot's ID as an environment variable
 BOT_ID = os.environ.get("BOT_ID")
 
+#initiate timer
+repeated_timer = None
+
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
 STRETCH_COMMAND = "stretch"
 TIMER_COMMAND = "timer"
+STOP_COMMAND = "stop"
 STRETCHES = {"calf_stretch": "your calves by doing some toe raises.", 
 	         "hip_stretch":  "your hips by doing a seated figure four stretch.", 
 	         "ham_stretch":  "your hamstrings by doing a forward fold. Try to touch your toes!",
@@ -24,7 +30,9 @@ STRETCHES = {"calf_stretch": "your calves by doing some toe raises.",
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
 
 
-def handle_command(command, channel):
+def handle_command(command, channel, repeated_timer):
+
+    print(command)
     """
         Receives commands directed at the bot and determines if they
         are valid commands. If so, then acts on the commands. If not,
@@ -34,14 +42,33 @@ def handle_command(command, channel):
                "* command for a random stretch, or the *" + TIMER_COMMAND + \
                "* command to get stretches on an interval."
     if command.startswith(STRETCH_COMMAND):
+        print(command)
     	# stretch = STRETCHES[randint(0,len(STRETCHES)-1)]
         img_name, stretch = choice(list(STRETCHES.items()))
         response = "Sure! Why don't you stretch " + stretch 
+        slack_client.api_call("chat.postMessage", channel=channel,
+                          text=response, as_user=True)
     if command.startswith(TIMER_COMMAND):
-    	response = "This feature is coming soon. Stay tuned!"
+        delay = 5
+        response = "Okay! I will send you a new stretch every " + str(delay) + " minutes. Type 'stop' to stop receiving stretches."
+        slack_client.api_call("chat.postMessage", channel=channel,
+                          text=response, as_user=True)
+        repeated_timer = RepeatedTimer(delay, send_stretch, channel)
+        sleep(5)
+    if command.startswith(STOP_COMMAND):
+        print("stopping")
+        if repeated_timer is None:
+            return
+        else:
+            repeated_timer.stop()
+        return
+
+def send_stretch(channel):
+    print("in sendstretch")
+    img_name, stretch = choice(list(STRETCHES.items()))
+    response = "Sure! Why don't you stretch " + stretch
     slack_client.api_call("chat.postMessage", channel=channel,
                           text=response, as_user=True)
-
 
 def parse_slack_output(slack_rtm_output):
     """
@@ -66,7 +93,7 @@ if __name__ == "__main__":
         while True:
             command, channel = parse_slack_output(slack_client.rtm_read())
             if command and channel:
-                handle_command(command, channel)
+                handle_command(command, channel, repeated_timer)
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print("Connection failed. Invalid Slack token or bot ID?")
