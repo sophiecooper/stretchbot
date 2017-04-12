@@ -69,7 +69,7 @@ def handle_command(command, channel):
         response = "Okay! I will send you a new stretch every " + str(delay) + " minutes. Type 'stop' to stop receiving stretches."
         slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
         global repeated_timer
-        repeated_timer = RepeatedTimer(delay, send_stretch, channel)
+        repeated_timer = RepeatedTimer((delay*60), send_stretch, channel)
         return
     if command.startswith(STOP_COMMAND):
         response = "Okay! You should stop receiving stretches now."
