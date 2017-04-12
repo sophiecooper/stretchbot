@@ -52,12 +52,9 @@ def handle_command(command, channel):
         are valid commands. If so, then acts on the commands. If not,
         returns back what it needs for clarification.
     """
-    response = "I'm not sure what you mean. Use the *" + STRETCH_COMMAND + \
-               "* command for a random stretch, or the *" + TIMER_COMMAND + \
-               "{# of minutes between each stretch}* command to get stretches on an interval."
-
     if command.startswith(STRETCH_COMMAND):
         send_stretch(channel)
+        return
     if command.startswith(TIMER_COMMAND):
         delay = ""
         for s in command.split():
@@ -73,6 +70,7 @@ def handle_command(command, channel):
         slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
         global repeated_timer
         repeated_timer = RepeatedTimer(delay, send_stretch, channel)
+        return
     if command.startswith(STOP_COMMAND):
         response = "Okay! You should stop receiving stretches now."
         slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
@@ -82,6 +80,12 @@ def handle_command(command, channel):
         else:
             repeated_timer.stop()
             return
+    else:
+        response = "I'm not sure what you mean. Use the *" + STRETCH_COMMAND + \
+               "* command for a random stretch, or the *" + TIMER_COMMAND + \
+               "{# of minutes between each stretch}* command to get stretches on an interval."
+        slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
+        return
 
 def send_stretch(channel):
     img_name, stretch = choice(list(STRETCHES.items()))
