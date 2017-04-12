@@ -16,28 +16,31 @@ AT_BOT = "<@" + BOT_ID + ">"
 STRETCH_COMMAND = "stretch"
 TIMER_COMMAND = "timer"
 STOP_COMMAND = "stop"
-STRETCHES = {"calf_stretch": "your calves by doing some toe raises.", 
-	         "hip_stretch":  "your hips by doing a seated figure four stretch.", 
-	         "ham_stretch":  "your hamstrings by doing a forward fold. Try to touch your toes!",
-	         "neck_stretch": "your neck by looking to the left and right, then do some gentle neck rolls.",
-	         "ob_stretch":   "your obliques by doing a side bend for 10 seconds on each side",
-	         "wrist_strech": "your wrists and shoulders by interlacing your fingers with straight arms in front of you",
-	         "back_stretch": "your back by doing a seated twist on each side", 
-             "quad_stretch": "your quads by doing a standing quad stretch."
+STRETCHES = {"calf_stretch":       "your calves by doing some toe raises.", 
+	         "hip_stretch":        "your hips by doing a seated figure four stretch.", 
+	         "ham_stretch":        "your hamstrings by doing a forward fold. Try to touch your toes!",
+	         "neck_stretch":       "your neck by looking to the left and right, then do some gentle neck rolls.",
+	         "ob_stretch":         "your obliques by doing a side bend for 10 seconds on each side",
+	         "wrist_stretch":      "your wrists and shoulders by interlacing your fingers with straight arms in front of you",
+	         "back_stretch":       "your back by doing a seated twist on each side", 
+             "quad_stretch":       "your quads by doing a standing quad stretch.",
+             "tricep_stretch":     "your triceps by grabbing your elbow over your head and gently stretching.",
+             "shoulder_stretch":   "your shoulders by doing 5 forward and 5 backward shoulder rolls"
              }
-IMAGES = {"calf_stretch": "https://goo.gl/Qk8beF",
-          "hip_stretch": "https://goo.gl/71mVav",
-          "ham_stretch": "https://goo.gl/rTIOJV",
-          "neck_stretch": "https://goo.gl/92dq5z",
-          "ob_stretch": "https://goo.gl/zMH6tt",
-          "wrist_stretch": "goo.gl/Qk8beF",
-          "back_stretch": "https://goo.gl/3lKlgl", 
-          "quad_stretch": "https://goo.gl/vpvUgg"
+IMAGES = {"calf_stretch":       "https://goo.gl/Qk8beF",
+          "hip_stretch":        "https://goo.gl/71mVav",
+          "ham_stretch":        "https://goo.gl/rTIOJV",
+          "neck_stretch":       "https://goo.gl/P08a6c",
+          "ob_stretch":         "https://goo.gl/zMH6tt",
+          "wrist_stretch":      "https://goo.gl/t8XRgt",
+          "back_stretch":       "https://goo.gl/3lKlgl", 
+          "quad_stretch":       "https://goo.gl/vpvUgg",
+          "tricep_stretch":     "https://goo.gl/Du2LLs",
+          "shoulder_stretch":   "https://goo.gl/nclj32"
           }
 
 # instantiate Slack & Twilio clients
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
-
 
 def handle_command(command, channel):
     """
@@ -50,7 +53,6 @@ def handle_command(command, channel):
                "{# of minutes between each stretch}* command to get stretches on an interval."
 
     if command.startswith(STRETCH_COMMAND):
-    	# stretch = STRETCHES[randint(0,len(STRETCHES)-1)]
         send_stretch(channel)
     if command.startswith(TIMER_COMMAND):
         delay = ""
@@ -68,6 +70,8 @@ def handle_command(command, channel):
         global repeated_timer
         repeated_timer = RepeatedTimer((delay*60), send_stretch, channel)
     if command.startswith(STOP_COMMAND):
+        response = "Okay! You should stop receiving stretches now."
+        slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
         global repeated_timer
         if repeated_timer is None:
             return
@@ -79,7 +83,7 @@ def send_stretch(channel):
     img_name, stretch = choice(list(STRETCHES.items()))
     img_attachment = [{"title": "Do this stretch!", 
                        "image_url": IMAGES[img_name]}]
-    response = "Sure! Why don't you stretch " + stretch 
+    response = "Why don't you stretch " + stretch 
     slack_client.api_call("chat.postMessage", channel=channel,
                                               text=response, 
                                               as_user=True, 
