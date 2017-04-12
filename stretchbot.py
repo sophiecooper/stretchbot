@@ -25,7 +25,9 @@ STRETCHES = {"calf_stretch":       "your calves by doing some toe raises.",
 	         "back_stretch":       "your back by doing a seated twist on each side", 
              "quad_stretch":       "your quads by doing a standing quad stretch.",
              "tricep_stretch":     "your triceps by grabbing your elbow over your head and gently stretching.",
-             "shoulder_stretch":   "your shoulders by doing 5 forward and 5 backward shoulder rolls"
+             "shoulder_stretch":   "your shoulders by doing 5 forward and 5 backward shoulder rolls",
+             "arm_stretch":        "your arms by doing an eagle arm stretch. Put one elbow over your other arm, and try to touch your palms together with your fingers pointing up to the ceiling.",
+             "chest_stretch":      "your chest by holding the edge of a wall with one hand at shoulder height and slowly rotating away from the wall to open the front of your chest."
              }
 IMAGES = {"calf_stretch":       "https://goo.gl/Qk8beF",
           "hip_stretch":        "https://goo.gl/71mVav",
@@ -36,7 +38,9 @@ IMAGES = {"calf_stretch":       "https://goo.gl/Qk8beF",
           "back_stretch":       "https://goo.gl/3lKlgl", 
           "quad_stretch":       "https://goo.gl/vpvUgg",
           "tricep_stretch":     "https://goo.gl/Du2LLs",
-          "shoulder_stretch":   "https://goo.gl/nclj32"
+          "shoulder_stretch":   "https://goo.gl/nclj32",
+          "arm_stretch":        "https://goo.gl/fIofqw",
+          "chest_stretch":      "https://goo.gl/UNDuaf"
           }
 
 # instantiate Slack & Twilio clients
@@ -68,7 +72,7 @@ def handle_command(command, channel):
         response = "Okay! I will send you a new stretch every " + str(delay) + " minutes. Type 'stop' to stop receiving stretches."
         slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
         global repeated_timer
-        repeated_timer = RepeatedTimer((delay*60), send_stretch, channel)
+        repeated_timer = RepeatedTimer(delay, send_stretch, channel)
     if command.startswith(STOP_COMMAND):
         response = "Okay! You should stop receiving stretches now."
         slack_client.api_call("chat.postMessage", channel=channel, text=response, as_user=True)
